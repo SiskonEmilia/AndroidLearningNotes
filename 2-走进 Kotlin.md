@@ -40,6 +40,8 @@
     - [布尔值](#布尔值)
     - [数组](#数组)
     - [字符串](#字符串)
+- [小小拓展：返回与跳转](#小小拓展返回与跳转)
+    - [Break & Continue](#break--continue)
 
 <!-- /TOC -->
 
@@ -425,8 +427,107 @@ println(boxedLongA.equals(boxedA.toLong())) // true
 
 ### 字符
 
+在 Kotlin 中，字符以类型 `Char` 表示，该类型不能直接当作数字使用
+
+```Kotlin
+Char a = 'a'
+a == 3 // error!
+a == 'a' // true
+a in 'a'..'z' // true
+```
+
 ### 布尔值
+
+和 JAVA 一致
 
 ### 数组
 
+Kotlin 中，数组以 `Array` 类的实例呈现。
+
+```Kotlin
+val arr = Array(5, { i -> (i * i).toString() })
+// ["0", "1", "4", "9", "16"]
+val arr2 = arrayOf(1, 4, 9)
+// [1, 4, 9]
+```
+
 ### 字符串
+
+Kotlin 中的字符串是 `String` 类的实例，字符串是不可变的，其中每个字符都可以通过类似数组的方式访问。
+
+字符串的 + 操作符表示将操作数转换为字符串后拼接在一起。
+
+三个引号可以构成 原始字符串 raw string，其可以包含任何字符而无需转义：
+
+```Kotlin
+var str = """
+  This is a test for raw string
+"""
+
+var strWithoutPrefixSpace = """
+  |This is a test for raw string
+  |No space will remain!
+""".trimMargin()
+```
+
+`trimMargin()` 方法去除指定字符之前的空格，默认是 `|`
+
+原始字符串同样支持字符串模板。
+
+## 小小拓展：返回与跳转
+
+这部分要讲的是 Kotlin 中神奇的三个语句：
+
+- return
+- break
+- continue
+
+欸？等等……这些语句是个高级语言都有的吧！怎么就成 Kotlin 的神奇语句了？
+
+莫慌莫慌，我们细细道来……
+
+### Break & Continue
+
+在 Kotlin 中，任何表达式都可以通过标签来标记。其格式为 标识符 + `@`，比如 `abc@`。他们可以成为返回和跳转的目标：
+
+```Kotlin
+loop@ for (i in 1..100) {
+  for (j in 1..100) {
+    if (...) break@loop
+  }
+}
+
+fun foo() {
+  listOf(1, 2, 3, 4, 5).forEach(fun(value: Int) {
+    if (value == 3) return
+    print(value)
+  })
+}
+
+fun foo() {
+  listOf(1, 2, 3, 4, 5).forEach(
+    if (value == 3) return@forEach
+    print(value)
+  )
+}
+
+fun foo() {
+  listOf(1, 2, 3, 4, 5).forEach@label(
+    if (value == 3) return@label
+    print(value)
+  )
+}
+```
+
+在 `foo` 的例子中，三者都相当于 `continue`，那么 `break` 要如何等价呢？创建一层嵌套的 lambda 即可：
+
+```Kotlin
+fun foo() {
+  run @label{
+    listOf(1, 2, 3, 4, 5).forEach(
+      if (value == 3) return@label
+      print(value)
+    )
+  }
+}
+```
